@@ -1,0 +1,69 @@
+metastack2.1版本发布说明
+
+重要提示：
+metastack 是基于 Slurm 的功能增强和性能优化的版本，metastack2.1基于Slurm-22.05.8版本进行开发。
+
+如果使用 slurmdbd（Slurm 数据库守护进程），则必须先更新此版本。
+
+注意：如果使用主备DBD，则必须首先启动主数据库才能进行任何数据库转换。
+
+metastack2.1的slurmdbd将与metastack2.0及以上版本、Slurm-20.11及以上版本的Slurm守护程序兼容。不需同时更新所有集群，但是在更新其他使用slurmdbd的集群之前，需首先更新slurmdbd并使其运行。
+
+metastack2.1可以从metastack2.0及以上版本、Slurm-20.11或Slurm-21.08版本直接升级到该版本，不会丢失作业或其他状态信息。直接从早期版本的 Slurm 升级将导致状态信息的丢失。
+
+从其他版本升级到metastack2.1时，所有SPANK插件必须重新编译。
+
+
+要点
+=====================================================================
+-- 支持作业运行信息采集，如CPU利用率、内存使用情况等
+-- 支持异常负载作业识别与监控
+-- 支持计算节点随机调度，均衡计算节点使用率
+-- 支持分区节点资源动态调整
+-- 支持调度/查询服务分离，应对服务高负载场景
+-- 支持低版本兼容，兼容metastack低版本与slurm官方版本
+-- 优化账号/用户相关的添加、查询性能问题
+-- 优化单位时间内用户请求流量控制功能
+-- 优化部分RPC高负载场景
+-- 优化分区异构资源调度支持
+-- 优化作业提交性能
+-- 优化大批量小作业场景下作业吞吐效率
+-- 优化srun创建作业步超时场景处理
+-- 修复bug若干
+
+
+配置文件更改（详见man page帮助手册）
+=====================================================================
+-- slurm.conf
+    - JobAcctGatherFrequency新增配置子项time_window、avecpuutil、collect_step、disable_job_monitor
+    - SlurmctldParameters新增配置子项rl_enable、rl_retry_max_period、node_borrow_interval、step_pendlist_dedup、step_timeout_enhance
+    - DebugFlags新增配置子项Assoc
+    - 新增配置项CacheQuery、CacheQueryPort、CacheDupInterval
+    - 新增配置项DownNodeToReg、HealthCheckCarryNode
+    - 分区配置新增配置子项RBN
+    - 分区配置新增配置子项HetPart
+    - 分区配置新增配置子项StandbyNodes、StandbyNodeParameters，其中StandbyNodeParameters包含配置子项nodes_can_borrow、offline_node_state
+-- acct_gather.conf
+    - 新增配置项ProfileInfluxDBDefault，可配置task,jobmonitor
+    - 新增配置项ProfileInfluxDBWorkdir
+
+
+命令更改（详见man page帮助手册）
+=====================================================================
+-- sinfo
+    - 新增--borrow参数
+    - 新增--cache参数
+-- squeue
+    - 新增--cache参数
+-- scontrol 
+    - 分区查询新增--borrow参数
+    - 作业/分区/节点/作业步查询新增--cache参数
+-- sacctmgr 
+    - 查询新增borrow参数
+    - 新增-y、-z参数，分别对应环境变量SACCTMGR_NO_PARENTLIMITS、SACCTMGR_NO_SORT
+-- sbatch
+    - 新增--job-monitor参数，参数可配置子项time_window、avecpuutil、collect_step
+-- sstat
+    - 新增-d参数
+-- sjinfo
+    - 新增命令sjinfo，可选参数-j、-e、-o、-m等
